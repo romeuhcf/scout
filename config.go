@@ -3,38 +3,38 @@ package main
 import (
 	"io/ioutil"
 
-	"gopkg.in/yaml.v2"
+	"encoding/json"
 )
 
-// Config is the internal representation of the yaml that determines what
+// Config is the internal representation of the json that determines what
 // the app listens to an enqueues
 type Config struct {
-	Redis RedisConfig `yaml:"redis"`
-	AWS   AWSConfig   `yaml:"aws"`
-	Queue QueueConfig `yaml:"queue"`
+	Redis RedisConfig `json:"redis"`
+	AWS   AWSConfig   `json:"aws"`
+	Queue QueueConfig `json:"queue"`
 }
 
 // RedisConfig is a nested config that contains the necessary parameters to
 // connect to a redis instance and enqueue workers.
 type RedisConfig struct {
-	Host      string `yaml:"host"`
-	Namespace string `yaml:"namespace"`
-	Queue     string `yaml:"queue"`
+	Host      string `json:"host"`
+	Namespace string `json:"namespace"`
+	Queue     string `json:"queue"`
 }
 
 // AWSConfig is a nested config that contains the necessary parameters to
 // connect to AWS and read from SQS
 type AWSConfig struct {
-	AccessKey string `yaml:"access_key"`
-	SecretKey string `yaml:"secret_key"`
-	Region    string `yaml:"region"`
+	AccessKey string `json:"access_key"`
+	SecretKey string `json:"secret_key"`
+	Region    string `json:"region"`
 }
 
 // QueueConfig is a nested config that gives the SQS queue to listen on
 // and a mapping of topics to workeers
 type QueueConfig struct {
-	Name   string            `yaml:"name"`
-	Topics map[string]string `yaml:"topics"`
+	Name   string            `json:"name"`
+	Topics map[string]string `json:"topics"`
 }
 
 // ReadConfig reads from a file with the given name and returns a config or
@@ -48,6 +48,6 @@ func ReadConfig(file string) (*Config, error) {
 
 	config := new(Config)
 
-	err = yaml.Unmarshal(data, config)
+	err = json.Unmarshal(data, config)
 	return config, err
 }
