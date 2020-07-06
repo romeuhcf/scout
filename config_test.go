@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -23,40 +22,33 @@ func (c *ConfigTestSuite) SetupTest() {
 	c.assert = require.New(c.T())
 
 	var err error
-	c.tempfile, err = ioutil.TempFile("", "config")
-	c.assert.NoError(err)
-}
-
-func (c *ConfigTestSuite) TearDownTest() {
-	os.Remove(c.tempfile.Name())
-}
-
-func (c *ConfigTestSuite) WriteTemp(content string) {
-	_, err := c.tempfile.Write([]byte(content))
-	c.assert.NoError(err)
-	ReadConfig(c.tempfile.Name())
-	err = c.tempfile.Close()
 	c.assert.NoError(err)
 }
 
 var validConfig = `{
-"redis":{
-  "host": "localhost:9000",
-  "namespace": "test",
-  "queue": "background"},
-"aws":{
-  "access_key": "super",
-  "secret_key": "secret",
-  "region": "us_best"},
-"queue":{
-  "name": "myapp_queue",
-  "topics":{
-    "foo_topic": "FooWorker",
-    "bar_topic": "BazWorker"}}}`
+	"redis": {
+	  "host": "localhost:9000",
+	  "namespace": "test",
+	  "queue": "background"
+	},
+	"aws": {
+	  "access_key": "super",
+	  "secret_key": "secret",
+	  "region": "us_best"
+	},
+	"queue": {
+	  "name": "myapp_queue",
+	  "topics": {
+		"foo_topic": "FooWorker",
+		"bar_topic": "BazWorker"
+	  }
+	}
+  }`
 
 func (c *ConfigTestSuite) TestConfig_Valid() {
-	c.WriteTemp(validConfig)
-	config, err := ReadConfig(c.tempfile.Name())
+	envName := "FOO"
+	os.Setenv(envName, validConfig)
+	config, err := ReadConfig(envName)
 	c.assert.NoError(err)
 
 	// More to convince myself that the yaml package works than anything
@@ -67,20 +59,23 @@ func (c *ConfigTestSuite) TestConfig_Valid() {
 	c.assert.Equal(config.Queue.Topics["foo_topic"], "FooWorker")
 }
 
-var sparseConfig = `
-{
-	"redis":{
-  "host": "localhost:9000"}
-  ,
-"aws":{
-  "access_key": "super",
-  "secret_key": "secret",
-  "region": "us_best"}}`
+var sparseConfig = `{
+	"redis": {
+	  "host": "localhost:9000"
+	},
+	"aws": {
+	  "access_key": "super",
+	  "secret_key": "secret",
+	  "region": "us_best"
+	}
+  }`
 
 // It's ok for stuff to be missing, we'll check that elsewhere
 func (c *ConfigTestSuite) TestConfig_Sparse() {
-	c.WriteTemp(sparseConfig)
-	config, err := ReadConfig(c.tempfile.Name())
+	envName := "BAR"
+	os.Setenv(envName, sparseConfig)
+
+	config, err := ReadConfig(envName)
 	c.assert.NoError(err)
 
 	c.assert.Equal(config.Redis.Namespace, "")

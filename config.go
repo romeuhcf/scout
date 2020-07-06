@@ -1,9 +1,8 @@
 package main
 
 import (
-	"io/ioutil"
-
 	"encoding/json"
+	"os"
 )
 
 // Config is the internal representation of the json that determines what
@@ -37,17 +36,12 @@ type QueueConfig struct {
 	Topics map[string]string `json:"topics"`
 }
 
-// ReadConfig reads from a file with the given name and returns a config or
-// an error if the file was unable to be parsed. It does no error checking
+// ReadConfig reads from a string with the given name and returns a config or
+// an error if the string was unable to be parsed. It does no error checking
 // as far as required fields.
-func ReadConfig(file string) (*Config, error) {
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-
+func ReadConfig(env_name string) (*Config, error) {
 	config := new(Config)
 
-	err = json.Unmarshal(data, config)
+	err := json.Unmarshal([]byte(os.Getenv(env_name)), config)
 	return config, err
 }
