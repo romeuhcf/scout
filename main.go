@@ -28,8 +28,8 @@ It gracefully stops when sent SIGTERM.`
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "configEnvName, c",
-			Usage: "Evironment variable name where JSON config is set, required",
+			Name:  "config, c",
+			Usage: "Env name for json config, required",
 		},
 		cli.Int64Flag{
 			Name:  "freq, f",
@@ -57,7 +57,7 @@ func main() {
 }
 
 func runApp(ctx *cli.Context) error {
-	configEnvName := ctx.String("config")
+	configFile := ctx.String("config")
 	frequency := ctx.Int64("freq")
 
 	if ctx.Bool("json") {
@@ -76,14 +76,14 @@ func runApp(ctx *cli.Context) error {
 
 	log.SetLevel(level)
 
-	if configEnvName == "" {
+	if configFile == "" {
 		return cli.NewExitError("Missing required flag --config. Run `scout --help` for more information", 1)
 	}
 
-	log.Infof("Reading config from %s", configEnvName)
+	log.Infof("Reading config from %s", configFile)
 	log.Infof("Polling every %d milliseconds", frequency)
 
-	config, err := ReadConfig(configEnvName)
+	config, err := ReadConfig(configFile)
 	if err != nil {
 		return cli.NewExitError("Failed to parse config file", 1)
 	}
